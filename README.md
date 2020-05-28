@@ -19,10 +19,10 @@ In all cases, an already created instance of [ElasticApmTracer](https://github.c
 ```yaml
 PcComponentes\ElasticAPM\Symfony\Component\HttpKernel\EventSubscriber:
   class: PcComponentes\ElasticAPM\Symfony\Component\HttpKernel\EventSubscriber
-    autoconfigure: true
-    arguments:
-      $router: '@router'
-      $elasticApmTracer: '@apm.tracer' # \ZoiloMora\ElasticAPM\ElasticApmTracer instance.
+  autoconfigure: true
+  arguments:
+    $router: '@router'
+    $elasticApmTracer: '@apm.tracer' # \ZoiloMora\ElasticAPM\ElasticApmTracer instance.
 ```
 
 ## License
