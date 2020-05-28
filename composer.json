@@ -1,0 +1,26 @@
+{
+  "name": "pccomponentes/apm-symfony-http-kernel",
+  "description": "Elastic APM for Symfony HttpKernel",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Zoilo Mora",
+      "email": "zoilo.mora@pccomponentes.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "PcComponentes\\ElasticAPM\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^7.4",
+    "symfony/http-kernel": "^4.4",
+    "zoilomora/elastic-apm-agent-php": "^0.1.9",
+    "symfony/routing": "^4.4"
+  },
+  "require-dev": {
+    "pccomponentes/coding-standard": "^1.0"
+  }
+}
