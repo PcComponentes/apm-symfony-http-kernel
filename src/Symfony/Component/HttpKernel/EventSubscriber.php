@@ -64,7 +64,9 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelResponse(FilterResponseEvent $event): void
     {
-        $this->span->stop();
+        if (isset($this->span)) {
+            $this->span->stop();
+        }
     }
 
     public function onKernelTerminate(PostResponseEvent $event): void
