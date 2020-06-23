@@ -42,6 +42,10 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelRequest(GetResponseEvent $event): void
     {
+        if (false === $this->elasticApmTracer->active()) {
+            return;
+        }
+
         $this->transaction = $this->elasticApmTracer->startTransaction(
             $this->getNameTransaction(
                 $event->getRequest(),
@@ -52,6 +56,10 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelController(FilterControllerEvent $event): void
     {
+        if (false === $this->elasticApmTracer->active()) {
+            return;
+        }
+
         $name = $this->getCallableName(
             $event->getController(),
         );
@@ -64,6 +72,10 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelResponse(FilterResponseEvent $event): void
     {
+        if (false === $this->elasticApmTracer->active()) {
+            return;
+        }
+
         if (isset($this->span)) {
             $this->span->stop();
         }
@@ -71,6 +83,10 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelTerminate(PostResponseEvent $event): void
     {
+        if (false === $this->elasticApmTracer->active()) {
+            return;
+        }
+
         $statusCode = $event->getResponse()->getStatusCode();
 
         $this->transaction->context()->setResponse(
