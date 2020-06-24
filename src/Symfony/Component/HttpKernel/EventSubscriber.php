@@ -13,21 +13,21 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\RouterInterface;
 use ZoiloMora\ElasticAPM\ElasticApmTracer;
 use ZoiloMora\ElasticAPM\Events\Common\Context;
-use ZoiloMora\ElasticAPM\Events\Span\Span;
-use ZoiloMora\ElasticAPM\Events\Transaction\Transaction;
 
 final class EventSubscriber implements EventSubscriberInterface
 {
     private RouterInterface $router;
     private ElasticApmTracer $elasticApmTracer;
 
-    private Transaction $transaction;
-    private Span $span;
+    private array $transactions;
+    private array $spans;
 
     public function __construct(RouterInterface $router, ElasticApmTracer $elasticApmTracer)
     {
         $this->router = $router;
         $this->elasticApmTracer = $elasticApmTracer;
+        $this->transactions = [];
+        $this->spans = [];
     }
 
     public static function getSubscribedEvents(): array
@@ -46,7 +46,11 @@ final class EventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->transaction = $this->elasticApmTracer->startTransaction(
+        $requestId = $this->requestId(
+            $event->getRequest(),
+        );
+
+        $this->transactions[$requestId] = $this->elasticApmTracer->startTransaction(
             $this->getNameTransaction(
                 $event->getRequest(),
             ),
@@ -60,11 +64,15 @@ final class EventSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $requestId = $this->requestId(
+            $event->getRequest(),
+        );
+
         $name = $this->getCallableName(
             $event->getController(),
         );
 
-        $this->span = $this->elasticApmTracer->startSpan(
+        $this->spans[$requestId] = $this->elasticApmTracer->startSpan(
             $name,
             'controller',
         );
@@ -76,9 +84,15 @@ final class EventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (isset($this->span)) {
-            $this->span->stop();
+        $requestId = $this->requestId(
+            $event->getRequest(),
+        );
+
+        if (false === \array_key_exists($requestId, $this->spans)) {
+            return;
         }
+
+        $this->spans[$requestId]->stop();
     }
 
     public function onKernelTerminate(PostResponseEvent $event): void
@@ -87,17 +101,32 @@ final class EventSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $requestId = $this->requestId(
+            $event->getRequest(),
+        );
+
+        if (false === \array_key_exists($requestId, $this->transactions)) {
+            return;
+        }
+
+        $transaction = $this->transactions[$requestId];
+
         $statusCode = $event->getResponse()->getStatusCode();
 
-        $this->transaction->context()->setResponse(
+        $transaction->context()->setResponse(
             new Context\Response(true, null, null, $statusCode),
         );
 
-        $this->transaction->stop(
+        $transaction->stop(
             $this->getResult($statusCode),
         );
 
         $this->elasticApmTracer->flush();
+    }
+
+    private function requestId(Request $request): int
+    {
+        return \spl_object_id($request);
     }
 
     private function getCallableName($callable): string
