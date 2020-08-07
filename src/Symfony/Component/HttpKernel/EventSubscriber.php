@@ -164,10 +164,15 @@ final class EventSubscriber implements EventSubscriberInterface
         $routeName = $request->attributes->get('_route');
         $route = $routeCollection->get($routeName);
 
+        $path = null !== $route
+            ? $route->getPath()
+            : 'unknown'
+        ;
+
         return \sprintf(
             '%s %s',
             $request->getMethod(),
-            $route->getPath(),
+            $path,
         );
     }
 
