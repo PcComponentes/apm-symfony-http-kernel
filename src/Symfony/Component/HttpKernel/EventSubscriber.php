@@ -18,14 +18,17 @@ final class EventSubscriber implements EventSubscriberInterface
 {
     private RouterInterface $router;
     private ElasticApmTracer $elasticApmTracer;
+    private array $skippedRoutes;
 
     private array $transactions;
     private array $spans;
 
-    public function __construct(RouterInterface $router, ElasticApmTracer $elasticApmTracer)
+    public function __construct(RouterInterface $router, ElasticApmTracer $elasticApmTracer, array $skippedRoutes = [])
     {
         $this->router = $router;
         $this->elasticApmTracer = $elasticApmTracer;
+        $this->skippedRoutes = $skippedRoutes;
+
         $this->transactions = [];
         $this->spans = [];
     }
@@ -121,7 +124,9 @@ final class EventSubscriber implements EventSubscriberInterface
             $this->getResult($statusCode),
         );
 
-        $this->elasticApmTracer->flush();
+        $this->flush(
+            $event->getRequest(),
+        );
     }
 
     private function requestId(Request $request): int
@@ -160,20 +165,27 @@ final class EventSubscriber implements EventSubscriberInterface
 
     private function getNameTransaction(Request $request): string
     {
-        $routeCollection = $this->router->getRouteCollection();
-        $routeName = $request->attributes->get('_route');
-        $route = $routeCollection->get($routeName);
-
-        $path = null !== $route
-            ? $route->getPath()
-            : 'unknown'
-        ;
-
         return \sprintf(
             '%s %s',
             $request->getMethod(),
-            $path,
+            $this->getRoutePath($request),
         );
+    }
+
+    private function getRoutePath(Request $request): string
+    {
+        $routeName = $this->getRouteName($request);
+        $route = $this->router->getRouteCollection()->get($routeName);
+
+        return null !== $route
+            ? $route->getPath()
+            : 'unknown'
+        ;
+    }
+
+    private function getRouteName(Request $request): string
+    {
+        return $request->attributes->get('_route');
     }
 
     private function getResult(int $statusCode): string
@@ -186,5 +198,16 @@ final class EventSubscriber implements EventSubscriberInterface
                 1,
             ),
         );
+    }
+
+    private function flush(Request $request): void
+    {
+        $routeName = $this->getRouteName($request);
+
+        if (true === \in_array($routeName, $this->skippedRoutes, true)) {
+            return;
+        }
+
+        $this->elasticApmTracer->flush();
     }
 }
