@@ -16,8 +16,8 @@
   },
   "require": {
     "php": "^7.4",
-    "symfony/http-kernel": "^4.4",
-    "symfony/routing": "^4.4",
+    "symfony/http-kernel": "^4.4|^5.0",
+    "symfony/routing": "^4.4|^5.0",
     "zoilomora/elastic-apm-agent-php": "^0.1"
   },
   "require-dev": {
