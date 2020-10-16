@@ -6,6 +6,7 @@ namespace PcComponentes\ElasticAPM\Symfony\Component\HttpKernel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\KernelEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
@@ -45,7 +46,7 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelRequest(RequestEvent $event): void
     {
-        if (false === $this->elasticApmTracer->active()) {
+        if (false === $this->isActive($event)) {
             return;
         }
 
@@ -63,7 +64,7 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelController(ControllerEvent $event): void
     {
-        if (false === $this->elasticApmTracer->active()) {
+        if (false === $this->isActive($event)) {
             return;
         }
 
@@ -83,7 +84,7 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelResponse(ResponseEvent $event): void
     {
-        if (false === $this->elasticApmTracer->active()) {
+        if (false === $this->isActive($event)) {
             return;
         }
 
@@ -100,7 +101,7 @@ final class EventSubscriber implements EventSubscriberInterface
 
     public function onKernelTerminate(TerminateEvent $event): void
     {
-        if (false === $this->elasticApmTracer->active()) {
+        if (false === $this->isActive($event)) {
             return;
         }
 
@@ -209,5 +210,10 @@ final class EventSubscriber implements EventSubscriberInterface
         }
 
         $this->elasticApmTracer->flush();
+    }
+
+    private function isActive(KernelEvent $event): bool
+    {
+        return $this->elasticApmTracer->active() && $event->isMasterRequest();
     }
 }
