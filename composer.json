@@ -1,5 +1,5 @@
 {
-  "name": "pccomponentes/apm-symfony-http-kernel",
+  "name": "cyberclick-os/apm-symfony-http-kernel",
   "description": "Elastic APM for Symfony HttpKernel",
   "license": "MIT",
   "type": "library",
@@ -15,7 +15,7 @@
     }
   },
   "require": {
-    "php": "^7.4",
+    "php": "^8.0",
     "symfony/http-kernel": "^4.4|^5.0",
     "symfony/routing": "^4.4|^5.0",
     "zoilomora/elastic-apm-agent-php": "^0.1"
