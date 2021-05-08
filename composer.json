@@ -15,10 +15,10 @@
     }
   },
   "require": {
-    "php": "^7.4",
+    "php": "^7.4 | ^8.0",
     "symfony/http-kernel": "^4.4|^5.0",
     "symfony/routing": "^4.4|^5.0",
-    "zoilomora/elastic-apm-agent-php": "^0.1"
+    "zoilomora/elastic-apm-agent-php": "^1.0"
   },
   "require-dev": {
     "pccomponentes/coding-standard": "^1.0"
