@@ -214,6 +214,6 @@ final class EventSubscriber implements EventSubscriberInterface
 
     private function isActive(KernelEvent $event): bool
     {
-        return $this->elasticApmTracer->active() && $event->isMasterRequest();
+        return $this->elasticApmTracer->active() && $event->isMainRequest();
     }
 }
